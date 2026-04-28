@@ -8,10 +8,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Date; // Import Tambahan
-import java.text.SimpleDateFormat; // Import Tambahan
+import java.util.Date; 
+import java.text.SimpleDateFormat; 
 
-// --- KELAS TAMBAHAN UNTUK TOMBOL BULAT ---
 class RoundedButton extends JButton {
     private int radius;
     public RoundedButton(String text, int radius) {
@@ -33,7 +32,6 @@ class RoundedButton extends JButton {
     }
 }
 
-// --- EXCEPTION CUSTOM ---
 class DuplicateDataException extends Exception {
     public DuplicateDataException(String message) {
         super(message);
@@ -51,14 +49,13 @@ public class PerpustakaanGUI extends JFrame {
     private JTabbedPane tabbedPane;
     private DefaultTableModel modelLaporan;
 
-    // --- WARNA TEMA COQUETTE (PINK & PURPLE SOFT) ---
     private final Color bgUtama = new Color(255, 245, 248);
     private final Color teksJudul = new Color(94, 84, 142);
     private final Color bgTabelHeader = new Color(255, 212, 228);
-    private final Color btnBlue = new Color(189, 224, 254);    // Lihat
-    private final Color btnGreen = new Color(204, 213, 174);   // Tambah
-    private final Color btnYellow = new Color(254, 250, 224);  // Update
-    private final Color btnRed = new Color(250, 210, 225);     // Hapus
+    private final Color btnBlue = new Color(189, 224, 254);    
+    private final Color btnGreen = new Color(204, 213, 174);   
+    private final Color btnYellow = new Color(254, 250, 224);  
+    private final Color btnRed = new Color(250, 210, 225);     
     private final Color COLOR_PRIMARY = new Color(205, 180, 219); 
 
     private final Font FONT_HEADER = new Font("Segoe UI", Font.BOLD, 20);
@@ -188,7 +185,6 @@ public class PerpustakaanGUI extends JFrame {
         pnlForm.setBorder(new EmptyBorder(20,20,20,20));
         JTextField tNip = createBigTextField(""); JTextField tNama = createBigTextField(""); 
         
-        // --- PERUBAHAN: Menggunakan JSpinner untuk Tanggal (Kalender & Input) ---
         JSpinner tTglLahir = new JSpinner(new SpinnerDateModel());
         JSpinner.DateEditor de = new JSpinner.DateEditor(tTglLahir, "dd-MM-yyyy");
         tTglLahir.setEditor(de);
@@ -208,11 +204,8 @@ public class PerpustakaanGUI extends JFrame {
         btnS.addActionListener(e -> {
             String nip = tNip.getText().trim();
             String nama = tNama.getText().trim();
-            
-            // Format tanggal dari Spinner
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
             String tglLahir = sdf.format(tTglLahir.getValue());
-            
             String pass = new String(tPass.getPassword()).trim();
             if (nip.isEmpty() || nama.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(regDialog, "Silakan lengkapi semua form pendaftaran Anda!");
@@ -304,6 +297,11 @@ public class PerpustakaanGUI extends JFrame {
         JTextField tK = createBigTextField(""); JTextField tJ = createBigTextField(""); JTextField tY = createBigTextField(""); 
         Object[] f = {"Kode:", tK, "Judul:", tJ, "Jenis:", tY};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Buku", JOptionPane.OK_CANCEL_OPTION) == 0) {
+            // --- PERUBAHAN 1: Validasi Data Lengkap ---
+            if (tK.getText().trim().isEmpty() || tJ.getText().trim().isEmpty() || tY.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Data harus lengkap! Judul dan Jenis tidak boleh kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             if (cekDataAda(FILE_BUKU, 0, tK.getText().trim())) {
                 JOptionPane.showMessageDialog(this, "Kode Buku sudah terdaftar!", "Error", JOptionPane.ERROR_MESSAGE); return;
             }
@@ -361,6 +359,11 @@ public class PerpustakaanGUI extends JFrame {
         JTextField tNis = createBigTextField(""); JTextField tNama = createBigTextField(""); JTextField tAlamat = createBigTextField(""); 
         Object[] f = {"NIS:", tNis, "Nama:", tNama, "Alamat:", tAlamat};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Siswa", JOptionPane.OK_CANCEL_OPTION) == 0) {
+            // --- PERUBAHAN 1: Validasi Data Lengkap ---
+            if (tNis.getText().trim().isEmpty() || tNama.getText().trim().isEmpty() || tAlamat.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Data harus lengkap! Nama dan Alamat tidak boleh kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             if (cekDataAda(FILE_SISWA, 0, tNis.getText().trim())) {
                 JOptionPane.showMessageDialog(this, "NIS Siswa sudah terdaftar!", "Error", JOptionPane.ERROR_MESSAGE); return;
             }
@@ -432,6 +435,18 @@ public class PerpustakaanGUI extends JFrame {
         return String.format("TRX-%02d", maxId + 1);
     }
 
+    // --- PERUBAHAN 2: Fungsi Hitung Peminjaman Aktif ---
+    private int hitungBukuDipinjamSiswa(String nis) {
+        int count = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
+            String b; while ((b = br.readLine()) != null) {
+                String[] d = b.split(",");
+                if (d.length >= 6 && d[1].equals(nis) && d[5].equals("0")) count++;
+            }
+        } catch (IOException e) {}
+        return count;
+    }
+
     private void dialogPinjamBuku() {
         JTextField tN = createBigTextField(""); JTextField tB = createBigTextField("");
         JTextField tDurasi = createBigTextField("7"); 
@@ -440,6 +455,11 @@ public class PerpustakaanGUI extends JFrame {
             String nis = tN.getText().trim(); String kodeBuku = tB.getText().trim();
             if(!cekDataAda(FILE_SISWA, 0, nis) || !cekDataAda(FILE_BUKU, 0, kodeBuku)) {
                 JOptionPane.showMessageDialog(this, "NIS atau Kode Buku tidak ditemukan di data utama!", "Error", JOptionPane.ERROR_MESSAGE); return;
+            }
+            // --- PERUBAHAN 2: Limit Pinjam 2 Buku ---
+            if (hitungBukuDipinjamSiswa(nis) >= 2) {
+                JOptionPane.showMessageDialog(this, "Meminjam buku maksimal 2 tidak boleh lebih!", "Batas Peminjaman", JOptionPane.ERROR_MESSAGE);
+                return;
             }
             if (isBukuSedangDipinjam(kodeBuku)) {
                 JOptionPane.showMessageDialog(this, "Buku tidak tersedia, sudah dipinjam!", "Peringatan", JOptionPane.WARNING_MESSAGE);
@@ -458,15 +478,16 @@ public class PerpustakaanGUI extends JFrame {
     private void dialogKembaliBuku() {
         String trx = JOptionPane.showInputDialog("Masukkan Kode TRX:");
         if(trx != null && !trx.trim().isEmpty() && prosesPengembalian(trx)) {
-            refreshTabelLaporan(); JOptionPane.showMessageDialog(this, "Pengembalian Buku Sukses! Data transaksi otomatis dihapus.");
+            refreshTabelLaporan(); JOptionPane.showMessageDialog(this, "Pengembalian Buku Sukses!");
         } else if (trx != null) { JOptionPane.showMessageDialog(this, "Kode TRX tidak ditemukan atau sudah dikembalikan!"); }
     }
 
     private JPanel panelLaporan() {
         JPanel p = new JPanel(new BorderLayout(10, 10));
         p.setBorder(new EmptyBorder(15, 15, 15, 15));
-        p.add(new JLabel("Daftar Peminjaman Aktif", SwingConstants.CENTER), BorderLayout.NORTH);
-        modelLaporan = new DefaultTableModel(new String[]{"TRX", "NIS", "Buku", "Tgl Pinjam", "Batas Kembali"}, 0);
+        p.add(new JLabel("Histori & Daftar Peminjaman", SwingConstants.CENTER), BorderLayout.NORTH);
+        // --- PERUBAHAN 3: Tambah Kolom Status di Tabel ---
+        modelLaporan = new DefaultTableModel(new String[]{"TRX", "NIS", "Buku", "Tgl Pinjam", "Batas Kembali", "Status"}, 0);
         p.add(new JScrollPane(new JTable(modelLaporan)), BorderLayout.CENTER);
         refreshTabelLaporan();
         return p;
@@ -478,7 +499,11 @@ public class PerpustakaanGUI extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
             String b; while ((b = br.readLine()) != null) {
                 String[] d = b.split(",");
-                if (d.length >= 6 && d[5].equals("0")) modelLaporan.addRow(new Object[]{d[0], d[1], d[2], d[3], d[4]});
+                if (d.length >= 6) {
+                    // --- PERUBAHAN 3: Konversi Angka Status ke Teks ---
+                    String statusText = d[5].equals("0") ? "Belum Dikembalikan" : "Sudah Dikembalikan";
+                    modelLaporan.addRow(new Object[]{d[0], d[1], d[2], d[3], d[4], statusText});
+                }
             }
         } catch (IOException e) {}
     }
@@ -567,13 +592,18 @@ public class PerpustakaanGUI extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
             String b; while ((b = br.readLine()) != null) {
                 String[] d = b.split(",");
-                if (d[0].equalsIgnoreCase(kTrx) && d[5].equals("0")) { ok = true; } else { list.add(b); }
+                // --- PERUBAHAN 3: Ubah status dari 0 ke 1, bukan hapus baris ---
+                if (d[0].equalsIgnoreCase(kTrx) && d[5].equals("0")) { 
+                    d[5] = "1";
+                    list.add(String.join(",", d));
+                    ok = true; 
+                } else { 
+                    list.add(b); 
+                }
             }
         } catch (IOException e) { return false; }
         if(ok) {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_TRANSAKSI))) {
-                for(String s : list) { bw.write(s); bw.newLine(); }
-            } catch (IOException e) {}
+            tulisUlangFile(FILE_TRANSAKSI, list);
         }
         return ok;
     }
