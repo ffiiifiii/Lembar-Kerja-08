@@ -297,7 +297,6 @@ public class PerpustakaanGUI extends JFrame {
         JTextField tK = createBigTextField(""); JTextField tJ = createBigTextField(""); JTextField tY = createBigTextField(""); 
         Object[] f = {"Kode:", tK, "Judul:", tJ, "Jenis:", tY};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Buku", JOptionPane.OK_CANCEL_OPTION) == 0) {
-            // --- PERUBAHAN 1: Validasi Data Lengkap ---
             if (tK.getText().trim().isEmpty() || tJ.getText().trim().isEmpty() || tY.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Data harus lengkap! Judul dan Jenis tidak boleh kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -359,7 +358,6 @@ public class PerpustakaanGUI extends JFrame {
         JTextField tNis = createBigTextField(""); JTextField tNama = createBigTextField(""); JTextField tAlamat = createBigTextField(""); 
         Object[] f = {"NIS:", tNis, "Nama:", tNama, "Alamat:", tAlamat};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Siswa", JOptionPane.OK_CANCEL_OPTION) == 0) {
-            // --- PERUBAHAN 1: Validasi Data Lengkap ---
             if (tNis.getText().trim().isEmpty() || tNama.getText().trim().isEmpty() || tAlamat.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Data harus lengkap! Nama dan Alamat tidak boleh kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -434,8 +432,6 @@ public class PerpustakaanGUI extends JFrame {
         } catch (IOException e) {}
         return String.format("TRX-%02d", maxId + 1);
     }
-
-    // --- PERUBAHAN 2: Fungsi Hitung Peminjaman Aktif ---
     private int hitungBukuDipinjamSiswa(String nis) {
         int count = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
@@ -456,7 +452,6 @@ public class PerpustakaanGUI extends JFrame {
             if(!cekDataAda(FILE_SISWA, 0, nis) || !cekDataAda(FILE_BUKU, 0, kodeBuku)) {
                 JOptionPane.showMessageDialog(this, "NIS atau Kode Buku tidak ditemukan di data utama!", "Error", JOptionPane.ERROR_MESSAGE); return;
             }
-            // --- PERUBAHAN 2: Limit Pinjam 2 Buku ---
             if (hitungBukuDipinjamSiswa(nis) >= 2) {
                 JOptionPane.showMessageDialog(this, "Meminjam buku maksimal 2 tidak boleh lebih!", "Batas Peminjaman", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -486,7 +481,6 @@ public class PerpustakaanGUI extends JFrame {
         JPanel p = new JPanel(new BorderLayout(10, 10));
         p.setBorder(new EmptyBorder(15, 15, 15, 15));
         p.add(new JLabel("Histori & Daftar Peminjaman", SwingConstants.CENTER), BorderLayout.NORTH);
-        // --- PERUBAHAN 3: Tambah Kolom Status di Tabel ---
         modelLaporan = new DefaultTableModel(new String[]{"TRX", "NIS", "Buku", "Tgl Pinjam", "Batas Kembali", "Status"}, 0);
         p.add(new JScrollPane(new JTable(modelLaporan)), BorderLayout.CENTER);
         refreshTabelLaporan();
@@ -500,7 +494,6 @@ public class PerpustakaanGUI extends JFrame {
             String b; while ((b = br.readLine()) != null) {
                 String[] d = b.split(",");
                 if (d.length >= 6) {
-                    // --- PERUBAHAN 3: Konversi Angka Status ke Teks ---
                     String statusText = d[5].equals("0") ? "Belum Dikembalikan" : "Sudah Dikembalikan";
                     modelLaporan.addRow(new Object[]{d[0], d[1], d[2], d[3], d[4], statusText});
                 }
@@ -592,7 +585,6 @@ public class PerpustakaanGUI extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
             String b; while ((b = br.readLine()) != null) {
                 String[] d = b.split(",");
-                // --- PERUBAHAN 3: Ubah status dari 0 ke 1, bukan hapus baris ---
                 if (d[0].equalsIgnoreCase(kTrx) && d[5].equals("0")) { 
                     d[5] = "1";
                     list.add(String.join(",", d));
