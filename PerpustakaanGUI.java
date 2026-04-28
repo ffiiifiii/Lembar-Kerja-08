@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date; // Import Tambahan
+import java.text.SimpleDateFormat; // Import Tambahan
 
 // --- KELAS TAMBAHAN UNTUK TOMBOL BULAT ---
 class RoundedButton extends JButton {
@@ -96,9 +98,8 @@ public class PerpustakaanGUI extends JFrame {
         return pf;
     }
 
-    // --- BAGIAN INI SAJA YANG DIUBAH JADI ROUNDED ---
     private JButton styleButton(String text, Color bgColor) {
-        RoundedButton button = new RoundedButton(text, 40); // Radius 40 biar bulat cantik
+        RoundedButton button = new RoundedButton(text, 40); 
         button.setFont(new Font("Segoe UI", Font.BOLD, 18));
         button.setBackground(bgColor);
         button.setForeground(new Color(80, 80, 80));
@@ -120,10 +121,6 @@ public class PerpustakaanGUI extends JFrame {
             g2d.fillRect(0, 0, w, h);
         }
     }
-
-    // =========================================================================
-    // BERIKUT ADALAH LOGIKA ASLI KAMU (TANPA ADA YANG DIUBAH SEDIKITPUN)
-    // =========================================================================
 
     private void tampilkanLogin() {
         JDialog loginDialog = new JDialog(this, "Login Sistem Perpustakaan", true);
@@ -190,7 +187,15 @@ public class PerpustakaanGUI extends JFrame {
         JPanel pnlForm = new JPanel(new GridLayout(4, 2, 5, 10));
         pnlForm.setBorder(new EmptyBorder(20,20,20,20));
         JTextField tNip = createBigTextField(""); JTextField tNama = createBigTextField(""); 
-        JTextField tTglLahir = createBigTextField("DD-MM-YYYY"); JPasswordField tPass = createBigPasswordField();
+        
+        // --- PERUBAHAN: Menggunakan JSpinner untuk Tanggal (Kalender & Input) ---
+        JSpinner tTglLahir = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor de = new JSpinner.DateEditor(tTglLahir, "dd-MM-yyyy");
+        tTglLahir.setEditor(de);
+        tTglLahir.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        tTglLahir.setPreferredSize(new Dimension(280, 35));
+        
+        JPasswordField tPass = createBigPasswordField();
         
         pnlForm.add(new JLabel("NIP:")); pnlForm.add(tNip);
         pnlForm.add(new JLabel("Nama:")); pnlForm.add(tNama);
@@ -203,9 +208,13 @@ public class PerpustakaanGUI extends JFrame {
         btnS.addActionListener(e -> {
             String nip = tNip.getText().trim();
             String nama = tNama.getText().trim();
-            String tglLahir = tTglLahir.getText().trim();
+            
+            // Format tanggal dari Spinner
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            String tglLahir = sdf.format(tTglLahir.getValue());
+            
             String pass = new String(tPass.getPassword()).trim();
-            if (nip.isEmpty() || nama.isEmpty() || tglLahir.isEmpty() || pass.isEmpty() || tglLahir.equals("DD-MM-YYYY")) {
+            if (nip.isEmpty() || nama.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(regDialog, "Silakan lengkapi semua form pendaftaran Anda!");
                 return;
             }
@@ -283,7 +292,7 @@ public class PerpustakaanGUI extends JFrame {
         JButton bT = styleButton("Tambah Buku", btnGreen);
         JButton bU = styleButton("Update Buku", btnYellow);
         JButton bH = styleButton("Hapus Buku", btnRed);
-        bL.addActionListener(e -> dialogLihatData("Buku", FILE_BUKU, new String[]{"Kode", "Judul", "Jenis"}));
+        bL.addActionListener(e -> dialogLihatData("Buku", FILE_BUKU, new String[]{"Kode", "Judul", "Jenis", "Status"}));
         bT.addActionListener(e -> dialogTambahBuku());
         bU.addActionListener(e -> dialogUpdateBuku());
         bH.addActionListener(e -> dialogHapusDataBuku());
@@ -432,6 +441,10 @@ public class PerpustakaanGUI extends JFrame {
             if(!cekDataAda(FILE_SISWA, 0, nis) || !cekDataAda(FILE_BUKU, 0, kodeBuku)) {
                 JOptionPane.showMessageDialog(this, "NIS atau Kode Buku tidak ditemukan di data utama!", "Error", JOptionPane.ERROR_MESSAGE); return;
             }
+            if (isBukuSedangDipinjam(kodeBuku)) {
+                JOptionPane.showMessageDialog(this, "Buku tidak tersedia, sudah dipinjam!", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             int durasi = 7; try { durasi = Integer.parseInt(tDurasi.getText().trim()); } catch (NumberFormatException e) {}
             LocalDate tglPinjam = LocalDate.now();
             LocalDate tglKembali = tglPinjam.plusDays(durasi);
@@ -478,8 +491,29 @@ public class PerpustakaanGUI extends JFrame {
 
     private void muatDataKeTabel(String f, DefaultTableModel m) {
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            String b; while ((b = br.readLine()) != null) m.addRow(b.split(","));
+            String b; while ((b = br.readLine()) != null) {
+                String[] data = b.split(",");
+                if (f.equals(FILE_BUKU)) {
+                    String status = isBukuSedangDipinjam(data[0]) ? "Tidak Tersedia" : "Tersedia";
+                    Object[] rowWithStatus = new Object[data.length + 1];
+                    System.arraycopy(data, 0, rowWithStatus, 0, data.length);
+                    rowWithStatus[data.length] = status;
+                    m.addRow(rowWithStatus);
+                } else {
+                    m.addRow(data);
+                }
+            }
         } catch (IOException e) {}
+    }
+
+    private boolean isBukuSedangDipinjam(String kodeBuku) {
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
+            String b; while ((b = br.readLine()) != null) {
+                String[] d = b.split(",");
+                if (d.length >= 6 && d[2].equals(kodeBuku) && d[5].equals("0")) return true;
+            }
+        } catch (IOException e) {}
+        return false;
     }
 
     private boolean cekDataAda(String namaFile, int indexKolom, String target) {
