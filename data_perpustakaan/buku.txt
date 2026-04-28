@@ -1,3 +1,3 @@
-Buku-01,Air,Novel
-Buku-02,Deadlock,Sistem Operasi
-Buku-03,Api,Romance
+Buku-01,Pulang,Novel
+Buku-02,Pergi,Novel
+Buku-03,Pulang Pergi,Novel
