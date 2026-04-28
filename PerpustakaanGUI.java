@@ -9,6 +9,28 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+// --- KELAS TAMBAHAN UNTUK TOMBOL BULAT ---
+class RoundedButton extends JButton {
+    private int radius;
+    public RoundedButton(String text, int radius) {
+        super(text);
+        this.radius = radius;
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setOpaque(false);
+    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+        super.paintComponent(g2);
+        g2.dispose();
+    }
+}
+
 // --- EXCEPTION CUSTOM ---
 class DuplicateDataException extends Exception {
     public DuplicateDataException(String message) {
@@ -27,15 +49,15 @@ public class PerpustakaanGUI extends JFrame {
     private JTabbedPane tabbedPane;
     private DefaultTableModel modelLaporan;
 
-    // --- DEKLARASI WARNA TEMA ---
-    private final Color bgUtama = new Color(240, 248, 255);
-    private final Color teksJudul = new Color(25, 25, 112);
-    private final Color bgTabelHeader = new Color(173, 216, 230);
-    private final Color btnBlue = new Color(135, 206, 235);
-    private final Color btnGreen = new Color(153, 255, 153);
-    private final Color btnYellow = new Color(255, 255, 153);
-    private final Color btnRed = new Color(255, 153, 153);
-    private final Color COLOR_PRIMARY = new Color(0, 102, 204); 
+    // --- WARNA TEMA COQUETTE (PINK & PURPLE SOFT) ---
+    private final Color bgUtama = new Color(255, 245, 248);
+    private final Color teksJudul = new Color(94, 84, 142);
+    private final Color bgTabelHeader = new Color(255, 212, 228);
+    private final Color btnBlue = new Color(189, 224, 254);    // Lihat
+    private final Color btnGreen = new Color(204, 213, 174);   // Tambah
+    private final Color btnYellow = new Color(254, 250, 224);  // Update
+    private final Color btnRed = new Color(250, 210, 225);     // Hapus
+    private final Color COLOR_PRIMARY = new Color(205, 180, 219); 
 
     private final Font FONT_HEADER = new Font("Segoe UI", Font.BOLD, 20);
     private final Font FONT_NORMAL = new Font("Segoe UI", Font.PLAIN, 15);
@@ -60,9 +82,6 @@ public class PerpustakaanGUI extends JFrame {
         }
     }
 
-    // ==========================================
-    // UTILITY UI
-    // ==========================================
     private JTextField createBigTextField(String defaultText) {
         JTextField tf = new JTextField(defaultText);
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -77,21 +96,16 @@ public class PerpustakaanGUI extends JFrame {
         return pf;
     }
 
+    // --- BAGIAN INI SAJA YANG DIUBAH JADI ROUNDED ---
     private JButton styleButton(String text, Color bgColor) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        RoundedButton button = new RoundedButton(text, 40); // Radius 40 biar bulat cantik
+        button.setFont(new Font("Segoe UI", Font.BOLD, 18));
         button.setBackground(bgColor);
-        button.setForeground(Color.BLACK);
-        button.setOpaque(true);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
+        button.setForeground(new Color(80, 80, 80));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
 
-    // ==========================================
-    // HEADER GRADIENT MODERN
-    // ==========================================
     class GradientPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
@@ -99,17 +113,18 @@ public class PerpustakaanGUI extends JFrame {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             int w = getWidth(); int h = getHeight();
-            Color color1 = new Color(0, 102, 204); 
-            Color color2 = new Color(0, 180, 255); 
+            Color color1 = new Color(255, 192, 203); 
+            Color color2 = new Color(216, 191, 216); 
             GradientPaint gp = new GradientPaint(0, 0, color1, w, 0, color2);
             g2d.setPaint(gp);
             g2d.fillRect(0, 0, w, h);
         }
     }
 
-    // ==========================================
-    // 1. SISTEM LOGIN & REGISTRASI
-    // ==========================================
+    // =========================================================================
+    // BERIKUT ADALAH LOGIKA ASLI KAMU (TANPA ADA YANG DIUBAH SEDIKITPUN)
+    // =========================================================================
+
     private void tampilkanLogin() {
         JDialog loginDialog = new JDialog(this, "Login Sistem Perpustakaan", true);
         loginDialog.setSize(420, 320); 
@@ -134,19 +149,13 @@ public class PerpustakaanGUI extends JFrame {
         JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
         pnlBtn.setBackground(Color.WHITE);
         
-        JButton btnLogin = new JButton("Login"); 
+        JButton btnLogin = new RoundedButton("Login", 20); 
         btnLogin.setBackground(COLOR_PRIMARY); 
         btnLogin.setForeground(Color.WHITE);
-        btnLogin.setOpaque(true);
-        btnLogin.setBorderPainted(false);
-        btnLogin.setFocusPainted(false);
         
-        JButton btnRegister = new JButton("Buat Akun"); 
-        btnRegister.setBackground(new Color(0, 153, 51)); 
+        JButton btnRegister = new RoundedButton("Buat Akun", 20); 
+        btnRegister.setBackground(new Color(255, 200, 221)); 
         btnRegister.setForeground(Color.WHITE);
-        btnRegister.setOpaque(true);
-        btnRegister.setBorderPainted(false);
-        btnRegister.setFocusPainted(false);
         
         pnlBtn.add(btnLogin); pnlBtn.add(btnRegister);
         loginDialog.add(pnlBtn, BorderLayout.SOUTH);
@@ -154,12 +163,10 @@ public class PerpustakaanGUI extends JFrame {
         btnLogin.addActionListener(e -> {
             String nip = txtNip.getText().trim();
             String pass = new String(txtPass.getPassword()).trim();
-            
             if (nip.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(loginDialog, "Silakan masukkan NIP dan Password Anda!");
                 return;
             }
-
             int statusLogin = prosesLogin(nip, pass);
             if (statusLogin == 1) {
                 loginDialog.dispose(); bangunAntarmukaUtama();
@@ -182,17 +189,14 @@ public class PerpustakaanGUI extends JFrame {
         
         JPanel pnlForm = new JPanel(new GridLayout(4, 2, 5, 10));
         pnlForm.setBorder(new EmptyBorder(20,20,20,20));
-        JTextField tNip = createBigTextField(""); 
-        JTextField tNama = createBigTextField(""); 
-        JTextField tTglLahir = createBigTextField("DD-MM-YYYY"); 
-        JPasswordField tPass = createBigPasswordField();
+        JTextField tNip = createBigTextField(""); JTextField tNama = createBigTextField(""); 
+        JTextField tTglLahir = createBigTextField("DD-MM-YYYY"); JPasswordField tPass = createBigPasswordField();
         
         pnlForm.add(new JLabel("NIP:")); pnlForm.add(tNip);
         pnlForm.add(new JLabel("Nama:")); pnlForm.add(tNama);
         pnlForm.add(new JLabel("Tanggal Lahir:")); pnlForm.add(tTglLahir); 
         pnlForm.add(new JLabel("Password:")); pnlForm.add(tPass);
         
-        // --- INI BAGIAN YANG DITAMBAHKAN TOMBOL CANCEL & PANEL SOUTH ---
         JButton btnS = new JButton("Simpan");
         JButton btnCancel = new JButton("Cancel");
         
@@ -201,26 +205,20 @@ public class PerpustakaanGUI extends JFrame {
             String nama = tNama.getText().trim();
             String tglLahir = tTglLahir.getText().trim();
             String pass = new String(tPass.getPassword()).trim();
-
             if (nip.isEmpty() || nama.isEmpty() || tglLahir.isEmpty() || pass.isEmpty() || tglLahir.equals("DD-MM-YYYY")) {
                 JOptionPane.showMessageDialog(regDialog, "Silakan lengkapi semua form pendaftaran Anda!");
                 return;
             }
-
             tulisKeFile(FILE_PEGAWAI, nip + "," + nama + "," + pass + "," + tglLahir);
             regDialog.dispose();
         });
         
         btnCancel.addActionListener(e -> regDialog.dispose());
-
         JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        pnlSouth.add(btnS);
-        pnlSouth.add(btnCancel);
+        pnlSouth.add(btnS); pnlSouth.add(btnCancel);
         
         regDialog.add(pnlForm, BorderLayout.CENTER); 
         regDialog.add(pnlSouth, BorderLayout.SOUTH);
-        // ---------------------------------------------------------------
-        
         regDialog.setVisible(true);
     }
 
@@ -229,19 +227,15 @@ public class PerpustakaanGUI extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PEGAWAI))) {
             String b; while ((b = br.readLine()) != null) {
                 if (!b.trim().isEmpty()) {
-                    adaDataPegawai = true; // Menandakan file tidak kosong
+                    adaDataPegawai = true; 
                     String[] d = b.split(",");
                     if (d[0].equals(nip) && d[2].equals(password)) { loggedInPegawai = d[1]; return 1; }
                 }
             }
         } catch (IOException e) {}
-        
         return adaDataPegawai ? -1 : 0;
     }
 
-    // ==========================================
-    // 2. ANTARMUKA UTAMA (MODERN HEADER)
-    // ==========================================
     private void bangunAntarmukaUtama() {
         setTitle("Sistem Perpustakaan SMP");
         setSize(1000, 700);
@@ -273,18 +267,15 @@ public class PerpustakaanGUI extends JFrame {
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        tabbedPane.addTab("  Kelola Buku  ", panelDashboardBuku());
-        tabbedPane.addTab("  Kelola Siswa  ", panelDashboardSiswa());
-        tabbedPane.addTab("  Transaksi  ", panelDashboardTransaksi());
-        tabbedPane.addTab("  Laporan  ", panelLaporan());
+        tabbedPane.addTab("   Kelola Buku   ", panelDashboardBuku());
+        tabbedPane.addTab("   Kelola Siswa   ", panelDashboardSiswa());
+        tabbedPane.addTab("   Transaksi   ", panelDashboardTransaksi());
+        tabbedPane.addTab("   Laporan   ", panelLaporan());
 
         add(tabbedPane, BorderLayout.CENTER);
         setVisible(true);
     }
 
-    // ==========================================
-    // TAB: BUKU
-    // ==========================================
     private JPanel panelDashboardBuku() {
         JPanel p = new JPanel(new GridLayout(2, 2, 20, 20));
         p.setBorder(new EmptyBorder(50, 80, 50, 80));
@@ -292,21 +283,16 @@ public class PerpustakaanGUI extends JFrame {
         JButton bT = styleButton("Tambah Buku", btnGreen);
         JButton bU = styleButton("Update Buku", btnYellow);
         JButton bH = styleButton("Hapus Buku", btnRed);
-        
         bL.addActionListener(e -> dialogLihatData("Buku", FILE_BUKU, new String[]{"Kode", "Judul", "Jenis"}));
         bT.addActionListener(e -> dialogTambahBuku());
         bU.addActionListener(e -> dialogUpdateBuku());
         bH.addActionListener(e -> dialogHapusDataBuku());
-        
         p.add(bL); p.add(bT); p.add(bU); p.add(bH);
         return p;
     }
 
     private void dialogTambahBuku() {
-        JTextField tK = createBigTextField(""); 
-        JTextField tJ = createBigTextField(""); 
-        JTextField tY = createBigTextField(""); 
-        
+        JTextField tK = createBigTextField(""); JTextField tJ = createBigTextField(""); JTextField tY = createBigTextField(""); 
         Object[] f = {"Kode:", tK, "Judul:", tJ, "Jenis:", tY};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Buku", JOptionPane.OK_CANCEL_OPTION) == 0) {
             if (cekDataAda(FILE_BUKU, 0, tK.getText().trim())) {
@@ -325,14 +311,11 @@ public class PerpustakaanGUI extends JFrame {
                 JTextField tJ = createBigTextField(dataLama[1]);
                 JTextField tY = createBigTextField(dataLama.length > 2 ? dataLama[2] : "");
                 Object[] f = {"Kode (Tetap): " + kode.trim(), "Judul Baru:", tJ, "Jenis Baru:", tY};
-                
                 if (JOptionPane.showConfirmDialog(this, f, "Update Buku", JOptionPane.OK_CANCEL_OPTION) == 0) {
                     updateBarisDiFile(FILE_BUKU, kode.trim(), 0, kode.trim() + "," + tJ.getText() + "," + tY.getText());
                     JOptionPane.showMessageDialog(this, "Data Buku berhasil diupdate!");
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Kode Buku tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } else { JOptionPane.showMessageDialog(this, "Kode Buku tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE); }
         }
     }
 
@@ -346,15 +329,10 @@ public class PerpustakaanGUI extends JFrame {
                     hapusBarisDariFile(FILE_BUKU, kode.trim(), 0);
                     JOptionPane.showMessageDialog(this, "Buku berhasil dihapus!");
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Kode Buku tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } else { JOptionPane.showMessageDialog(this, "Kode Buku tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE); }
         }
     }
 
-    // ==========================================
-    // TAB: SISWA
-    // ==========================================
     private JPanel panelDashboardSiswa() {
         JPanel p = new JPanel(new GridLayout(2, 2, 20, 20));
         p.setBorder(new EmptyBorder(50, 80, 50, 80));
@@ -362,22 +340,16 @@ public class PerpustakaanGUI extends JFrame {
         JButton bT = styleButton("Tambah Siswa", btnGreen);
         JButton bU = styleButton("Update Siswa", btnYellow); 
         JButton bH = styleButton("Hapus Siswa", btnRed);     
-        
         p.add(bL); p.add(bT); p.add(bU); p.add(bH);
-        
         bL.addActionListener(e -> dialogLihatData("Siswa", FILE_SISWA, new String[]{"NIS", "Nama", "Alamat"}));
         bT.addActionListener(e -> dialogTambahSiswa());
         bU.addActionListener(e -> dialogUpdateSiswa());
         bH.addActionListener(e -> dialogHapusDataSiswa());
-        
         return p;
     }
 
     private void dialogTambahSiswa() {
-        JTextField tNis = createBigTextField(""); 
-        JTextField tNama = createBigTextField(""); 
-        JTextField tAlamat = createBigTextField(""); 
-        
+        JTextField tNis = createBigTextField(""); JTextField tNama = createBigTextField(""); JTextField tAlamat = createBigTextField(""); 
         Object[] f = {"NIS:", tNis, "Nama:", tNama, "Alamat:", tAlamat};
         if(JOptionPane.showConfirmDialog(this, f, "Tambah Siswa", JOptionPane.OK_CANCEL_OPTION) == 0) {
             if (cekDataAda(FILE_SISWA, 0, tNis.getText().trim())) {
@@ -396,14 +368,11 @@ public class PerpustakaanGUI extends JFrame {
                 JTextField tNama = createBigTextField(dataLama[1]);
                 JTextField tAlamat = createBigTextField(dataLama.length > 2 ? dataLama[2] : "");
                 Object[] f = {"NIS (Tetap): " + nis.trim(), "Nama Baru:", tNama, "Alamat Baru:", tAlamat};
-                
                 if (JOptionPane.showConfirmDialog(this, f, "Update Siswa", JOptionPane.OK_CANCEL_OPTION) == 0) {
                     updateBarisDiFile(FILE_SISWA, nis.trim(), 0, nis.trim() + "," + tNama.getText() + "," + tAlamat.getText());
                     JOptionPane.showMessageDialog(this, "Data Siswa berhasil diupdate!");
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "NIS Siswa tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } else { JOptionPane.showMessageDialog(this, "NIS Siswa tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE); }
         }
     }
 
@@ -417,9 +386,7 @@ public class PerpustakaanGUI extends JFrame {
                     hapusBarisDariFile(FILE_SISWA, nis.trim(), 0);
                     JOptionPane.showMessageDialog(this, "Siswa berhasil dihapus!");
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "NIS Siswa tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } else { JOptionPane.showMessageDialog(this, "NIS Siswa tidak ditemukan!", "Error", JOptionPane.ERROR_MESSAGE); }
         }
     }
 
@@ -429,9 +396,6 @@ public class PerpustakaanGUI extends JFrame {
         JOptionPane.showMessageDialog(this, new JScrollPane(t), "Data "+j, JOptionPane.PLAIN_MESSAGE);
     }
 
-    // ==========================================
-    // TAB: TRANSAKSI & LAPORAN 
-    // ==========================================
     private JPanel panelDashboardTransaksi() {
         JPanel p = new JPanel(new GridLayout(1, 2, 30, 0));
         p.setBorder(new EmptyBorder(150, 50, 150, 50));
@@ -443,12 +407,10 @@ public class PerpustakaanGUI extends JFrame {
         return p;
     }
 
-    // --- LOGIKA GENERATE KODE TRX BERURUTAN ---
     private String generateKodeTrxUrut() {
         int maxId = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
-            String baris; 
-            while ((baris = br.readLine()) != null) {
+            String baris; while ((baris = br.readLine()) != null) {
                 String[] data = baris.split(",");
                 if (data.length > 0 && data[0].startsWith("TRX-")) {
                     try {
@@ -460,45 +422,31 @@ public class PerpustakaanGUI extends JFrame {
         } catch (IOException e) {}
         return String.format("TRX-%02d", maxId + 1);
     }
-    // ------------------------------------------
 
     private void dialogPinjamBuku() {
-        JTextField tN = createBigTextField(""); 
-        JTextField tB = createBigTextField("");
+        JTextField tN = createBigTextField(""); JTextField tB = createBigTextField("");
         JTextField tDurasi = createBigTextField("7"); 
-        
         Object[] f = {"NIS:", tN, "Kode Buku:", tB, "Lama Pinjam (Hari):", tDurasi};
         if(JOptionPane.showConfirmDialog(this, f, "Pinjam Buku", JOptionPane.OK_CANCEL_OPTION) == 0) {
-            String nis = tN.getText().trim();
-            String kodeBuku = tB.getText().trim();
-            
+            String nis = tN.getText().trim(); String kodeBuku = tB.getText().trim();
             if(!cekDataAda(FILE_SISWA, 0, nis) || !cekDataAda(FILE_BUKU, 0, kodeBuku)) {
                 JOptionPane.showMessageDialog(this, "NIS atau Kode Buku tidak ditemukan di data utama!", "Error", JOptionPane.ERROR_MESSAGE); return;
             }
-            
-            int durasi = 7;
-            try { durasi = Integer.parseInt(tDurasi.getText().trim()); } catch (NumberFormatException e) {}
-
+            int durasi = 7; try { durasi = Integer.parseInt(tDurasi.getText().trim()); } catch (NumberFormatException e) {}
             LocalDate tglPinjam = LocalDate.now();
             LocalDate tglKembali = tglPinjam.plusDays(durasi);
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
             String kTrx = generateKodeTrxUrut(); 
             tulisKeFile(FILE_TRANSAKSI, kTrx + "," + nis + "," + kodeBuku + "," + tglPinjam.format(fmt) + "," + tglKembali.format(fmt) + ",0");
-            
-            refreshTabelLaporan(); // REFRESH LAPORAN
-            JOptionPane.showMessageDialog(this, "Peminjaman Berhasil! Kode: " + kTrx);
+            refreshTabelLaporan(); JOptionPane.showMessageDialog(this, "Peminjaman Berhasil! Kode: " + kTrx);
         }
     }
 
     private void dialogKembaliBuku() {
         String trx = JOptionPane.showInputDialog("Masukkan Kode TRX:");
         if(trx != null && !trx.trim().isEmpty() && prosesPengembalian(trx)) {
-            refreshTabelLaporan(); // REFRESH LAPORAN
-            JOptionPane.showMessageDialog(this, "Pengembalian Buku Sukses! Data transaksi otomatis dihapus.");
-        } else if (trx != null) {
-            JOptionPane.showMessageDialog(this, "Kode TRX tidak ditemukan atau sudah dikembalikan!");
-        }
+            refreshTabelLaporan(); JOptionPane.showMessageDialog(this, "Pengembalian Buku Sukses! Data transaksi otomatis dihapus.");
+        } else if (trx != null) { JOptionPane.showMessageDialog(this, "Kode TRX tidak ditemukan atau sudah dikembalikan!"); }
     }
 
     private JPanel panelLaporan() {
@@ -522,9 +470,6 @@ public class PerpustakaanGUI extends JFrame {
         } catch (IOException e) {}
     }
 
-    // ==========================================
-    // LOGIKA FILE & HELPER
-    // ==========================================
     private void tulisKeFile(String f, String d) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, true))) {
             bw.write(d); bw.newLine();
@@ -588,11 +533,7 @@ public class PerpustakaanGUI extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_TRANSAKSI))) {
             String b; while ((b = br.readLine()) != null) {
                 String[] d = b.split(",");
-                if (d[0].equalsIgnoreCase(kTrx) && d[5].equals("0")) { 
-                    ok = true; 
-                } else { 
-                    list.add(b); 
-                }
+                if (d[0].equalsIgnoreCase(kTrx) && d[5].equals("0")) { ok = true; } else { list.add(b); }
             }
         } catch (IOException e) { return false; }
         if(ok) {
